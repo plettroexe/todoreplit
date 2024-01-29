@@ -1,13 +1,8 @@
-const template = `<li class="list-group-item %BG">
-   <span>%TODO</span>
-   <button id="delete_ID" type="button" class="todo btn btn-danger float-end">X</button>
-   <button id="success_ID" type="button" class="todo btn btn-success float-end">V</button>
-   </li>`;
-
-let todos = [];
-const todoInput = document.getElementById("todoInput");
-const insertButton = document.getElementById("insertButton");
-const listUL = document.getElementById("listUL");
+// definizione di variabili DOM, tra cui un bottone che chiamiamo "insertButton"
+let todos = []; // lista dei task
+const render = () => {
+   // codice che genera l'html da todos
+}
 
 const send = (todo) => {
    return new Promise((resolve, reject) => {
@@ -17,16 +12,54 @@ const send = (todo) => {
             "Content-Type": "application/json"
          },
          body: JSON.stringify(todo)
-      }).then((response) => response.json)
+      })
+      .then((response) => response.json())
       .then((json) => {
-         resolve(json);
+         resolve(json); // risposta del server all'aggiunta
       })
    })
 }
 
+
 const load = () => {
    return new Promise((resolve, reject) => {
       fetch("/todo")
+      .then((response) => response.json())
+      .then((json) => {
+         resolve(json); // risposta del server con la lista
+      })
+   })
+}
+
+
+insertButton.onclick = () => {
+   const todo = {          
+      name: todoInput.value,
+      completed: false
+   }      
+   send({todo: todo}) // 1. invia la nuova Todo
+    .then(() => load()) // 2. caricala nuova lista
+    .then((json) => { 
+      todos = json.todos;
+      todoInput.value = "";
+      render();  // 3. render della nuova lista
+   });
+}
+
+load().then((json) => {
+   todos = json.todos;
+   render();
+});
+
+const completeTodo = (todo) => {
+   return new Promise((resolve, reject) => {
+      fetch("/todo/complete", {
+         method: 'PUT',
+         headers: {
+            "Content-Type": "application/json"
+         },
+         body: JSON.stringify(todo)
+      })
       .then((response) => response.json())
       .then((json) => {
          resolve(json);
@@ -34,59 +67,25 @@ const load = () => {
    })
 }
 
-insertButton.onclick = () => {
-   const todo = {          
-      name: todoInput.value,
-      completed: false
-   }      
-   send({todo: todo}).then(
-      () => load()
-   ).then((json) => {
-      todos = json.todos;
-      render();
-   });
-}
-
-const render = () => {
-   listUL.innerHTML  = todos.map((todo) => {
-      let row = template.replace("delete_ID", "delete_"+todo.id);
-      row = row.replace("success_ID", "success_"+todo.id);
-      row = row.replace("%TODO", todo.name);      
-      row = row.replace("%BG", todo.completed ? "bg-success" : "");
-
-      return row;
-   }).join("\n");   
-   const buttonList = document.querySelectorAll(".todo");
-   buttonList.forEach((button) => {
-         button.onclick = () => {
-            if (button.id.indexOf("delete_") != -1) {
-               const id = button.id.replace("delete_", "");
-               todos = todos.filter((todo) => todo.id !== id);
-            } 
-            if (button.id.indexOf("success_") != -1) {
-               const id = button.id.replace("success_", "");
-               todos = todos.map((todo) => {
-                  if (todo.id === id) {
-                     todo.completed = !todo.completed;
-                  }
-                  return todo;
-               })
-            }
-            render();
-         }
+const deleteTodo = (id) => {
+   return new Promise((resolve, reject) => {
+      fetch("/todo/"+id, {
+         method: 'DELETE',
+         headers: {
+            "Content-Type": "application/json"
+         },
+      })
+      .then((response) => response.json())
+      .then((json) => {
+         resolve(json);
+      })
    })
 }
 
-setInterval(() =>{
-
-   load().then((json)=> {
-
+setInterval(() => {
+   load().then((json) => {
       todos = json.todos;
+      todoInput.value = "";
       render();
-
    });
-
-}, 4000);
-
-
-
+}, 30000);
