@@ -1,8 +1,8 @@
+let http = require("http");
+
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-
-let http = require("http");
 
 app.use(bodyParser.json());
 app.use(
@@ -26,11 +26,6 @@ app.get("/todo", (req, res) => {
   res.json({ todos: todos });
 });
 
-const server = http.createServer(app);
-server.listen(80, () => {
-  console.log("- server running");
-});
-
 app.put("/todo/complete", (req, res) => {
   const todo = req.body;
   try {
@@ -50,4 +45,9 @@ app.put("/todo/complete", (req, res) => {
 app.delete("/todo/:id", (req, res) => {
   todos = todos.filter((element) => element.id !== req.params.id);
   res.json({ result: "Ok" });
+});
+
+const server = http.createServer(app);
+server.listen(80, () => {
+  console.log("- server running");
 });

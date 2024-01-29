@@ -1,8 +1,23 @@
-// definizione di variabili DOM, tra cui un bottone che chiamiamo "insertButton"
-let todos = []; // lista dei task
+const input = document.getElementById("todoInput");
+const insertButton = document.getElementById("insertButton");
+const listUL = document.getElementById("listUL");
+
+let todos = [];
+
 const render = () => {
-   // codice che genera l'html da todos
-}
+  let html = "";
+
+  todos.forEach((todo) => {
+    html += `<li class="${todo.completed ? 'completed' : ''}">
+               ${todo.text}
+               <button onclick="completeTodo(${todos.indexOf(todo)})">Toggle Complete</button>
+               <button onclick="deleteTodo(${todos.indexOf(todo)})">Remove</button>
+             </li>`;
+  });
+
+  listUL.innerHTML = html;
+};
+
 
 const send = (todo) => {
    return new Promise((resolve, reject) => {
@@ -33,6 +48,7 @@ const load = () => {
 
 
 insertButton.onclick = () => {
+  console.log("premuto");
    const todo = {          
       name: todoInput.value,
       completed: false
