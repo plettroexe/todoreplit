@@ -8,100 +8,93 @@ const render = () => {
   let html = "";
 
   todos.forEach((todo) => {
-    html += `<li class="${todo.completed ? 'completed' : ''}">
-               ${todo.text}
-               <button onclick="completeTodo(${todos.indexOf(todo)})">Toggle Complete</button>
-               <button onclick="deleteTodo(${todos.indexOf(todo)})">Remove</button>
-             </li>`;
-  });
+    html += '<br><li class="'+(todo.completed ? "completed" : "")+'">'+ todo.name + '  <button class="btn btn-success" onclick="completeTodo">Complete</button> <button class="btn btn-danger" onclick="deleteTodo">Remove</button></li>'});
 
   listUL.innerHTML = html;
 };
 
-
 const send = (todo) => {
-   return new Promise((resolve, reject) => {
-      fetch("/todo/add", {
-         method: 'POST',
-         headers: {
-            "Content-Type": "application/json"
-         },
-         body: JSON.stringify(todo)
-      })
+  return new Promise((resolve, reject) => {
+    fetch("/todo/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(todo),
+    })
       .then((response) => response.json())
       .then((json) => {
-         resolve(json); // risposta del server all'aggiunta
-      })
-   })
-}
-
+        resolve(json); // risposta del server all'aggiunta
+      });
+  });
+};
 
 const load = () => {
-   return new Promise((resolve, reject) => {
-      fetch("/todo")
+  return new Promise((resolve, reject) => {
+    fetch("/todo")
       .then((response) => response.json())
       .then((json) => {
-         resolve(json); // risposta del server con la lista
-      })
-   })
-}
-
+        resolve(json); // risposta del server con la lista
+      });
+  });
+};
 
 insertButton.onclick = () => {
   console.log("premuto");
-   const todo = {          
-      name: todoInput.value,
-      completed: false
-   }      
-   send({todo: todo}) // 1. invia la nuova Todo
+  const todo = {
+    name: todoInput.value,
+    completed: false,
+  };
+  send({ todo: todo }) // 1. invia la nuova Todo
     .then(() => load()) // 2. caricala nuova lista
-    .then((json) => { 
+    .then((json) => {
+      console.log(json);
       todos = json.todos;
       todoInput.value = "";
-      render();  // 3. render della nuova lista
-   });
-}
+      render(); // 3. render della nuova lista
+    });
+};
 
 load().then((json) => {
-   todos = json.todos;
-   render();
+  todos = json.todos;
+  render();
 });
 
 const completeTodo = (todo) => {
-   return new Promise((resolve, reject) => {
-      fetch("/todo/complete", {
-         method: 'PUT',
-         headers: {
-            "Content-Type": "application/json"
-         },
-         body: JSON.stringify(todo)
-      })
+  return new Promise((resolve, reject) => {
+    fetch("/todo/complete", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(todo),
+    })
       .then((response) => response.json())
       .then((json) => {
-         resolve(json);
-      })
-   })
-}
+        resolve(json);
+      });
+  });
+};
 
 const deleteTodo = (id) => {
-   return new Promise((resolve, reject) => {
-      fetch("/todo/"+id, {
-         method: 'DELETE',
-         headers: {
-            "Content-Type": "application/json"
-         },
-      })
+  return new Promise((resolve, reject) => {
+    fetch("/todo/" + id, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
       .then((response) => response.json())
       .then((json) => {
-         resolve(json);
-      })
-   })
-}
+        resolve(json);
+      });
+  });
+};
 
 setInterval(() => {
-   load().then((json) => {
-      todos = json.todos;
-      todoInput.value = "";
-      render();
-   });
+  load().then((json) => {
+    todos = json.todos;
+    todoInput.value = "";
+    render();
+  });
 }, 30000);
